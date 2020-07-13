@@ -1,10 +1,11 @@
 node { 
 	def prefix= ''
 	if (isUnix()) 
-		prefix = '~/setup/git/';
+		prefix = '~/Program Files/Git/';
 	else 
-		prefix = 'c:\\setup\\git\\';
-	def mvnHome = tool 'Maven 3.3.9'
+		prefix = 'C:\\Program Files\\Git\\';
+		
+	def mvnHome = tool 'Maven 3.6.3'
 	def tomcatWeb = ''
 	def mvnBin = mvnHome
 	if (isUnix()) {
@@ -12,7 +13,7 @@ node {
 		mvnBin+='/bin'
 		}
 	else { 
-		tomcatWeb = 'C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps'	
+		tomcatWeb = 'C:\\Program Files (x86)\\Apache Software Foundation\\Tomcat 9.0\\webapps'	
 		mvnBin+='\\bin'
 		}
 	stage('jpa') { 
