@@ -1,92 +1,32 @@
-node { 
-	def prefix= ''
-	if (isUnix()) 
-		prefix = '~/Program Files/Git/';
-	else 
-		prefix = 'C:\\Program Files\\Git\\';
-		
-	def mvnHome = tool 'Maven 3.6.3'
-	def tomcatWeb = ''
-	def mvnBin = mvnHome
-	if (isUnix()) {
-		tomcatWeb = '/Library/Tomcat/webapps'
-		mvnBin+='/bin'
-		}
-	else { 
-		tomcatWeb = 'C:\\Program Files (x86)\\Apache Software Foundation\\Tomcat 9.0\\webapps'	
-		mvnBin+='\\bin'
-		}
-	stage('jpa') { 
+pipeline {
+    agent any
 
-	 ws('wsjpa') {
-			git url: "${prefix}/course-jpa"
-			withEnv(["JAVA_HOME=${ tool 'JDK 8' }","PATH+MAVEN=${mvnBin}"]) {
-			if (isUnix()) 
-				sh "mvn clean install"
-			else {
-				bat "mvn clean install"
-				}
-				}
-			 stash name: "jpa-jar", includes: "target/course-jpa*.jar"	
-		}
-		}
-	stage('jsf') { 
-	 ws('wsjsf') {
-			git url: "${prefix}/course-jsf"
-			withEnv(["JAVA_HOME=${ tool 'JDK 8' }","PATH+MAVEN=${mvnBin}"]) {
-			if (isUnix()) {
-				sh "mvn clean install"
-				sh "cp target/course-jsf*.war ${tomcatWeb}/course-jsf.war"
-				}
-			else {
-				bat "mvn clean install"
-				bat "copy target\\course-jsf*.war \"${tomcatWeb}\\course-jsf.war\""
-				}
-				}
-			
-		}
-		}
-	stage('web') {
-	 ws('wsweb') {
-			git url: "${prefix}/course-web"
-			withEnv(["JAVA_HOME=${ tool 'JDK 8' }","PATH+MAVEN=${mvnBin}"]) {
-			if (isUnix()) {
-				sh "mvn clean install"
-				sh "cp target/course-web*.war ${tomcatWeb}/course-web.war"
-				}
-			else {
-				bat "mvn clean install"
-				bat "copy target\\course-web*.war \"${tomcatWeb}\\course-web.war\""
-				}
-				}
-			
-		}
-	}
-	stage ('it-jsf') {
-	 ws('wsit-jsf') {
-			git url: "${prefix}/course-jsf"
-			withEnv(["JAVA_HOME=${ tool 'JDK 8' }","PATH+MAVEN=${mvnBin}"]) {
-			if (isUnix()) 
-				sh "mvn compiler:testCompile failsafe:integration-test"
-			else 
-				bat "mvn compiler:testCompile failsafe:integration-test"
-				}
-			
-		}
-		
-	}
-	stage ('it-web') {
-	 ws('wsit-web') {
-			git url: "${prefix}/course-web"
-			withEnv(["JAVA_HOME=${ tool 'JDK 8' }","PATH+MAVEN=${mvnBin}"]) {
-			if (isUnix()) 
-				sh "mvn compiler:testCompile failsafe:integration-test"
-			else 
-				bat "mvn compiler:testCompile failsafe:integration-test"
-				}
-			
-		}
-		
-	}
+    stages {
+        stage ('Compile Stage') {
 
- }
+            steps {
+                withMaven(maven : 'Maven 3.6.3Maven 3.6.3') {
+                    sh 'mvn clean compile'
+                }
+            }
+        }
+
+        stage ('Testing Stage') {
+
+            steps {
+                withMaven(maven : 'Maven 3.6.3') {
+                    sh 'mvn test'
+                }
+            }
+        }
+
+
+        stage ('Deployment Stage') {
+            steps {
+                withMaven(maven : 'Maven 3.6.3') {
+                    sh 'mvn deploy'
+                }
+            }
+        }
+    }
+}
